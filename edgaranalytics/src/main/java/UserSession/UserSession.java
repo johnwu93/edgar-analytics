@@ -28,11 +28,11 @@ public final class UserSession {
     }
 
     private LocalDateTime getSessionExpiration() {
-        return lastRequestTime.plusSeconds(inactivityPeriod - 1);
+        return lastRequestTime.plusSeconds(inactivityPeriod);
     }
 
     public boolean isExpired(LocalDateTime latestTransactionTime) {
-        return getSessionExpiration().compareTo(latestTransactionTime) <= 0;
+        return getSessionExpiration().compareTo(latestTransactionTime) < 0;
     }
 
     public UserSession(String userId, LocalDateTime firstRequestTime, LocalDateTime lastRequestTime, int numWebPageRequest, int inactivityPeriod) {

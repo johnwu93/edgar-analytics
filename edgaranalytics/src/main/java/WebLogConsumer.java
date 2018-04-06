@@ -24,16 +24,23 @@ final class WebLogConsumer {
         String userID = webLog.getUserID();
         LocalDateTime date = webLog.getDate();
 
-        while (!userSessionSet.isEmpty() && userSessionSet.get(userSessionSet.lastKey()).isExpired(date)) {
-            UserSession log = userSessionSet.remove(userSessionSet.lastKey());
+        checkInactivity(date);
+
+        if (!userSessionSet.containsKey(userID)) {
+            UserSession newUserSession = new UserSession(userID, date, date, 1, inactivityPeriod);
+            userSessionSet.put(userID, newUserSession);
+        } else {
+            UserSession oldLog = userSessionSet.remove(userID);
+            UserSession newUserSession = new UserSession(userID, oldLog.getFirstRequestTime(), date, oldLog.getNumWebPageRequest() + 1, inactivityPeriod);
+            userSessionSet.put(userID, newUserSession);
+        }
+    }
+
+    public void checkInactivity(LocalDateTime date) {
+        while (!userSessionSet.isEmpty() && userSessionSet.get(userSessionSet.firstKey()).isExpired(date)) {
+            UserSession log = userSessionSet.remove(userSessionSet.firstKey());
             reporter.report(createLogOutput(log));
         }
-
-        UserSession newLog = userSessionSet.compute(userID, (id, userSession) -> {
-            int numRequest = userSession == null ? 1 : userSession.getNumWebPageRequest() + 1;
-            return new UserSession(userID, date, date.plusSeconds(inactivityPeriod), numRequest, inactivityPeriod);
-        });
-        userSessionSet.put(userID, newLog);
     }
 
     public void close() {
