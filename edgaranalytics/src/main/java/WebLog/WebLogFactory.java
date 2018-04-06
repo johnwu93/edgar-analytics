@@ -13,4 +13,8 @@ public class WebLogFactory {
         String dateString = inputArguments[1] + " " + inputArguments[2];
         return new WebLog(userId, LocalDateTime.parse(dateString, DATE_FORMATTER));
     }
+
+    public static WebLog createWebLog(String userId, LocalDateTime dateTime) {
+        return new WebLog(userId, dateTime);
+    }
 }

@@ -3,7 +3,7 @@ package WebLog;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-final class WebLog {
+public final class WebLog {
     // Did not include cik, accession and extention because it was not needed for this challenge
     private final String userID;
     private final LocalDateTime date;
@@ -11,6 +11,14 @@ final class WebLog {
     WebLog(String userID, LocalDateTime date) {
         this.userID = userID;
         this.date = date;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
     }
 
     @Override
