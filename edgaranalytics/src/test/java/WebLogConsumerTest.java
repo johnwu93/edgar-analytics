@@ -16,13 +16,12 @@ public class WebLogConsumerTest {
 
     private List<UserSessionLogOutput> sessionLogs;
     private static final LocalDateTime INITIAL_TIME = LocalDateTime.of(2017, 1, 1, 0, 0, 0);
+    private UserSessionReporter reporter = (log) -> sessionLogs.add(log);
 
     @Before
     public void setUp() {
         sessionLogs = new ArrayList<>();
     }
-
-    private UserSessionReporter reporter = (log) -> sessionLogs.add(log);
 
     @Test
     public void processSingleRequest() {
@@ -49,8 +48,8 @@ public class WebLogConsumerTest {
         webLogConsumer.close();
 
         assertEqualSessions(
-                computeSingleRequestLog(fooWebLog1),
-                computeSingleRequestLog(fooWebLog2)
+                Util.computeSingleRequestLog(fooWebLog1),
+                Util.computeSingleRequestLog(fooWebLog2)
         );
     }
 
@@ -82,8 +81,8 @@ public class WebLogConsumerTest {
         webLogConsumer.close();
 
         assertEqualSessions(
-                computeSingleRequestLog(fooWebLog),
-                computeSingleRequestLog(barWebLog)
+                Util.computeSingleRequestLog(fooWebLog),
+                Util.computeSingleRequestLog(barWebLog)
         );
     }
 
@@ -117,7 +116,7 @@ public class WebLogConsumerTest {
         assertEqualSessions();
     }
 
-    @Ignore("When the dashboard closes, it processes the remaining sessions by when they arrived")
+    @Ignore("When the dashboard closes, it processes the remaining getSessions by when they arrived")
     @Test
     public void processReadmeExample() {
         WebLogConsumer webLogConsumer = new WebLogConsumer(reporter, 2);
@@ -143,25 +142,20 @@ public class WebLogConsumerTest {
         );
     }
 
-    private void createAndProcessRequest(WebLogConsumer webLogConsumer, int timeReference, String... userIds) {
+    private static void createAndProcessRequest(WebLogConsumer webLogConsumer, int timeReference, String... userIds) {
         for (String userId : userIds) {
             WebLog fooWebLog1 = WebLogFactory.createWebLog(userId, INITIAL_TIME.plusSeconds(timeReference));
             webLogConsumer.processRequest(fooWebLog1);
         }
     }
 
-    private UserSessionLogOutput createLogOutput(String userId, int relativeStartTime, int relativeEndTime, int numCounts) {
+    private static UserSessionLogOutput createLogOutput(String userId, int relativeStartTime, int relativeEndTime, int numCounts) {
         return UserSessionLogOutputFactory.createLogOutput(
                 userId,
                 INITIAL_TIME.plusSeconds(relativeStartTime),
                 INITIAL_TIME.plusSeconds(relativeEndTime),
                 numCounts
         );
-    }
-
-    private UserSessionLogOutput computeSingleRequestLog(WebLog webLog) {
-        LocalDateTime date = webLog.getDate();
-        return UserSessionLogOutputFactory.createLogOutput(webLog.getUserID(), date, date, 1);
     }
 
     private void assertEqualSessions(UserSessionLogOutput... expected) { // todo check assertequals

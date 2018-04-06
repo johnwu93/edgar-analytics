@@ -1,20 +1,20 @@
 import UserSession.UserSession;
 import WebLog.WebLog;
-import org.apache.commons.collections4.map.LinkedMap;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static UserSession.UserSessionLogOutputFactory.createLogOutput;
 
 final class WebLogConsumer {
-    private int inactivityPeriod;
+    private final UserSessionSet userSessionSet;
+    private final int inactivityPeriod;
     private final UserSessionReporter reporter;
-    private final LinkedMap<String, UserSession> userSessionSet;
 
     WebLogConsumer(UserSessionReporter reporter, int inactivityPeriod) {
         this.reporter = reporter;
         this.inactivityPeriod = inactivityPeriod;
-        this.userSessionSet = new LinkedMap<>();
+        this.userSessionSet = new UserSessionSet();
     }
 
     // invariant: assumes that each the time for each input for webLog will be greater than the previous one
@@ -26,24 +26,21 @@ final class WebLogConsumer {
 
         checkInactivity(date);
 
-        if (!userSessionSet.containsKey(userID)) {
-            UserSession newUserSession = new UserSession(userID, date, date, 1, inactivityPeriod);
-            userSessionSet.put(userID, newUserSession);
+        if (!userSessionSet.containsSession(userID)) {
+            userSessionSet.addSession(new UserSession(userID, date, date, 1, inactivityPeriod));
         } else {
-            UserSession oldLog = userSessionSet.remove(userID);
-            UserSession newUserSession = new UserSession(userID, oldLog.getFirstRequestTime(), date, oldLog.getNumWebPageRequest() + 1, inactivityPeriod);
-            userSessionSet.put(userID, newUserSession);
+            userSessionSet.updateSession(userID, date);
         }
     }
 
     public void checkInactivity(LocalDateTime date) {
-        while (!userSessionSet.isEmpty() && userSessionSet.get(userSessionSet.firstKey()).isExpired(date)) {
-            UserSession log = userSessionSet.remove(userSessionSet.firstKey());
-            reporter.report(createLogOutput(log));
+        final List<UserSession> inactiveSessions = userSessionSet.removeInactiveSessions(date);
+        for (UserSession session : inactiveSessions) {
+            reporter.report(createLogOutput(session));
         }
     }
 
     public void close() {
-        userSessionSet.forEach((key, log) -> reporter.report(createLogOutput(log)));
+        userSessionSet.getSessions().forEach(log -> reporter.report(createLogOutput(log)));
     }
 }

@@ -27,6 +27,10 @@ public final class UserSession {
         return numWebPageRequest;
     }
 
+    public int getInactivityPeriod() {
+        return inactivityPeriod;
+    }
+
     private LocalDateTime getSessionExpiration() {
         return lastRequestTime.plusSeconds(inactivityPeriod);
     }
