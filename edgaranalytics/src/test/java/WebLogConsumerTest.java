@@ -1,3 +1,4 @@
+import UserSession.UserSessionLogOutput;
 import WebLog.WebLog;
 import WebLog.WebLogFactory;
 import org.junit.Assert;
@@ -9,9 +10,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static UserSession.UserSessionLogOutputFactory.createLogOutput;
+
 public class WebLogConsumerTest {
 
-    private List<UserSessionLog> sessionLogs;
+    private List<UserSessionLogOutput> sessionLogs;
     private static final LocalDateTime INITIAL_TIME = LocalDateTime.of(2017, 1, 1, 0, 0, 0);
 
     @Before
@@ -26,7 +29,9 @@ public class WebLogConsumerTest {
         WebLogConsumer webLogConsumer = new WebLogConsumer(reporter, 2);
         WebLog fooWebLog = WebLogFactory.createWebLog("foo", INITIAL_TIME);
         webLogConsumer.processRequest(fooWebLog);
-        assertEqualSessions(new UserSessionLog("foo", INITIAL_TIME, INITIAL_TIME.plusSeconds(2), 1));
+        webLogConsumer.close();
+
+        assertEqualSessions(createLogOutput("foo", INITIAL_TIME, INITIAL_TIME.plusSeconds(2), 1));
     }
 
     @Test
@@ -38,6 +43,7 @@ public class WebLogConsumerTest {
         WebLog barWebLog = WebLogFactory.createWebLog("bar", INITIAL_TIME);
         webLogConsumer.processRequest(barWebLog);
 
+        webLogConsumer.close();
         assertEqualSessions(
                 computeLogWithOneCount(fooWebLog, inactivityPeriod),
                 computeLogWithOneCount(barWebLog, inactivityPeriod)
@@ -55,6 +61,7 @@ public class WebLogConsumerTest {
         webLogConsumer.processRequest(fooWebLog1);
         WebLog fooWebLog2 = WebLogFactory.createWebLog("foo", secondRequestTime);
         webLogConsumer.processRequest(fooWebLog2);
+        webLogConsumer.close();
 
         assertEqualSessions(
                 computeLogWithOneCount(fooWebLog1, inactivityPeriod),
@@ -62,12 +69,30 @@ public class WebLogConsumerTest {
         );
     }
 
-    private UserSessionLog computeLogWithOneCount(WebLog webLog, int inactivityPeriod) {
-        LocalDateTime date = webLog.getDate();
-        return new UserSessionLog(webLog.getUserID(), date, date.plusSeconds(inactivityPeriod), 1);
+    @Test
+    public void processTwoRequestsSingleSessionMultipleRequest() {
+        int inactivityPeriod = 2;
+        WebLogConsumer webLogConsumer = new WebLogConsumer(reporter, inactivityPeriod);
+        int secondRequestDelay = 1;
+        LocalDateTime secondRequestTime = INITIAL_TIME.plusSeconds(secondRequestDelay);
+
+        WebLog fooWebLog1 = WebLogFactory.createWebLog("foo", INITIAL_TIME);
+        webLogConsumer.processRequest(fooWebLog1);
+        WebLog fooWebLog2 = WebLogFactory.createWebLog("foo", secondRequestTime);
+        webLogConsumer.processRequest(fooWebLog2);
+        webLogConsumer.close();
+
+        assertEqualSessions(
+                createLogOutput("foo", secondRequestTime, secondRequestTime.plusSeconds(inactivityPeriod), 2)
+        );
     }
 
-    private void assertEqualSessions(UserSessionLog... expected) {
+    private UserSessionLogOutput computeLogWithOneCount(WebLog webLog, int inactivityPeriod) {
+        LocalDateTime date = webLog.getDate();
+        return createLogOutput(webLog.getUserID(), date, date.plusSeconds(inactivityPeriod), 1);
+    }
+
+    private void assertEqualSessions(UserSessionLogOutput... expected) { // todo check assertequals
         Assert.assertTrue(Arrays.asList(expected).equals(sessionLogs));
     }
 }

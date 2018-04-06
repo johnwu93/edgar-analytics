@@ -1,3 +1,5 @@
+import UserSession.UserSessionLogOutput;
+
 public interface UserSessionReporter {
-    void report(UserSessionLog log);
+    void report(UserSessionLogOutput log);
 }
