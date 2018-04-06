@@ -40,7 +40,7 @@ public class UserSessionSetTest {
         assertEqualSessions(
                 userSessionSet,
                 createSingleSession("bar", 1),
-                new UserSession("foo", INITIAL_TIME.plusSeconds(0), INITIAL_TIME.plusSeconds(2), 2, 2)
+                new UserSession("foo", INITIAL_TIME.plusSeconds(0), INITIAL_TIME.plusSeconds(2), 2, 2, 1)
         );
     }
 
@@ -90,7 +90,8 @@ public class UserSessionSetTest {
                 INITIAL_TIME.plusSeconds(time),
                 INITIAL_TIME.plusSeconds(time),
                 1,
-                INACTIVITY_PERIOD
+                INACTIVITY_PERIOD,
+                1
         );
     }
 }

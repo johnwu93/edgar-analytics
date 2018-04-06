@@ -19,7 +19,14 @@ public class UserSessionSet {
 
     void updateSession(String userID, LocalDateTime newDate) {
         UserSession oldLog = sessionSet.remove(userID);
-        UserSession newUserSession = new UserSession(userID, oldLog.getFirstRequestTime(), newDate, oldLog.getNumWebPageRequest() + 1, oldLog.getInactivityPeriod());
+        UserSession newUserSession = new UserSession(
+                userID,
+                oldLog.getFirstRequestTime(),
+                newDate,
+                oldLog.getNumWebPageRequest() + 1,
+                oldLog.getInactivityPeriod(),
+                oldLog.getFirstCreatedId()
+        );
         sessionSet.put(userID, newUserSession);
     }
 
@@ -52,8 +59,8 @@ public class UserSessionSet {
         return inactiveSessions;
     }
 
-    public Collection<UserSession> getSessions() {
-        return sessionSet.values();
+    public List<UserSession> getSessions() {
+        return new ArrayList<>(sessionSet.values());
     }
 
 }

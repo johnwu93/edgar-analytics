@@ -4,7 +4,6 @@ import WebLog.WebLog;
 import WebLog.WebLogFactory;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -116,7 +115,6 @@ public class WebLogConsumerTest {
         assertEqualSessions();
     }
 
-    @Ignore("When the dashboard closes, it processes the remaining getSessions by when they arrived")
     @Test
     public void processReadmeExample() {
         WebLogConsumer webLogConsumer = new WebLogConsumer(reporter, 2);

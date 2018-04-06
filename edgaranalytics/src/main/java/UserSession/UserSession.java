@@ -9,7 +9,8 @@ public final class UserSession {
     private final LocalDateTime firstRequestTime;
     private final LocalDateTime lastRequestTime;
     private final int numWebPageRequest;
-    private int inactivityPeriod;
+    private final int inactivityPeriod;
+    private final int firstCreatedId;
 
     public String getUserId() {
         return userId;
@@ -31,6 +32,10 @@ public final class UserSession {
         return inactivityPeriod;
     }
 
+    public int getFirstCreatedId() {
+        return firstCreatedId;
+    }
+
     private LocalDateTime getSessionExpiration() {
         return lastRequestTime.plusSeconds(inactivityPeriod);
     }
@@ -39,12 +44,18 @@ public final class UserSession {
         return getSessionExpiration().compareTo(latestTransactionTime) < 0;
     }
 
-    public UserSession(String userId, LocalDateTime firstRequestTime, LocalDateTime lastRequestTime, int numWebPageRequest, int inactivityPeriod) {
+    public UserSession(String userId,
+                       LocalDateTime firstRequestTime,
+                       LocalDateTime lastRequestTime,
+                       int numWebPageRequest,
+                       int inactivityPeriod,
+                       int firstCreatedId) {
         this.userId = userId;
         this.firstRequestTime = firstRequestTime;
         this.lastRequestTime = lastRequestTime;
         this.numWebPageRequest = numWebPageRequest;
         this.inactivityPeriod = inactivityPeriod;
+        this.firstCreatedId = firstCreatedId;
     }
 
     @Override
